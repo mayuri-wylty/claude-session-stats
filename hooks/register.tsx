@@ -49,7 +49,7 @@ async function refreshContext($: EngineInterface) {
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
-    await $.command.register({ name: 'statsbar', description: 'Show or hide the session stats band', argumentHint: '[show|hide]' })
+    await $.command.register({ name: 'statsbar', description: '显示或隐藏会话统计栏', argumentHint: '[show|hide]' })
     // A context reading lets the band draw before the first model request
     await refreshContext($).catch(() => {})
     $.ui.invalidate('ui.render')
@@ -124,7 +124,6 @@ export const register: Register = on => {
     const ttft = s.ttftCount ? (s.ttftMs / s.ttftCount / 1000).toFixed(1) : '-'
     const hitColor = cacheHit >= 80 ? 'green' : cacheHit >= 50 ? 'yellow' : 'red'
     const ctxColor = !c || c.percent < 50 ? 'green' : c.percent < 80 ? 'yellow' : 'red'
-    const ctxIcon = ctxColor === 'green' ? '🟢' : ctxColor === 'yellow' ? '🟡' : '🔴'
 
     // A segment is [text, color]; no color draws it dim
     type Seg = [string, string?]
@@ -145,15 +144,15 @@ export const register: Register = on => {
 
     type Labels = { time: Seg[]; tok: Seg[]; ctx: Seg[] }
     const fullLabels: Labels = {
-      time: [['💬 '], [`${s.turns}`, 'white'], [' turns  '], ['🔁 '], [`${s.steps}`, 'white'], [' steps  '], ['⚡ '], [`${tps}`, 'cyan'], [' tok/s']],
-      tok: [['🧮 '], [fmtTok(tokens), 'white'], [' tok  '], ['💾 '], ['Cache hit '], [`${cacheHit}%`, hitColor]],
-      ctx: c ? [[`${ctxIcon} `], [`${c.percent}%`, ctxColor], [' context']] : [],
+      time: [['轮次 '], [`${s.turns}`, 'white'], ['  步骤 '], [`${s.steps}`, 'white'], ['  速度 '], [`${tps}`, 'cyan'], [' tok/s']],
+      tok: [['令牌 '], [fmtTok(tokens), 'white'], ['  缓存命中 '], [`${cacheHit}%`, hitColor]],
+      ctx: c ? [['上下文 '], [`${c.percent}%`, ctxColor]] : [],
     }
     // Short labels for a narrow band; the hover cards keep every number
     const shortLabels: Labels = {
-      time: [['🔁 '], [`${s.steps}`, 'white'], [' '], ['⚡ '], [`${tps}`, 'cyan'], [' t/s']],
-      tok: [['🧮 '], [fmtTok(tokens), 'white'], [' '], ['💾 '], [`${cacheHit}%`, hitColor]],
-      ctx: c ? [[`${ctxIcon} `], [`${c.percent}%`, ctxColor], [' ctx']] : [],
+      time: [['步骤 '], [`${s.steps}`, 'white'], [' 速度 '], [`${tps}`, 'cyan']],
+      tok: [['令牌 '], [fmtTok(tokens), 'white'], [' 命中 '], [`${cacheHit}%`, hitColor]],
+      ctx: c ? [['上下文 '], [`${c.percent}%`, ctxColor]] : [],
     }
     const fullWidth = Object.values(fullLabels).reduce((n, l) => n + (l.length ? width(l) + GAP : 0), BUTTON)
     const labels = avail && fullWidth > avail ? shortLabels : fullLabels
@@ -164,12 +163,12 @@ export const register: Register = on => {
         accent: 'blue',
         label: labels.time,
         detail: [
-          ['💬 Turns '], [`${s.turns}`, 'white'], SEP,
-          ['🔁 Steps '], [`${s.steps}`, 'white'], SEP,
-          ['🤖 LLM '], [fmtDur(s.llmMs), 'blue'], SEP,
-          ['🔧 Tools '], [fmtDur(s.toolMs), 'magenta'], SEP,
-          ['⏳ TTFT '], [`${ttft}s`, 'yellow'], SEP,
-          ['⚡ '], [`${tps}`, 'cyan'], [' tok/s'],
+          ['轮次 '], [`${s.turns}`, 'white'], SEP,
+          ['步骤 '], [`${s.steps}`, 'white'], SEP,
+          ['模型耗时 '], [fmtDur(s.llmMs), 'blue'], SEP,
+          ['工具耗时 '], [fmtDur(s.toolMs), 'magenta'], SEP,
+          ['首字延迟 '], [`${ttft}s`, 'yellow'], SEP,
+          ['速度 '], [`${tps}`, 'cyan'], [' tok/s'],
         ],
       },
       {
@@ -177,12 +176,12 @@ export const register: Register = on => {
         accent: 'magenta',
         label: labels.tok,
         detail: [
-          ['🧮 Total '], [fmtTok(tokens), 'white'], SEP,
-          ['💾 Cache hit '], [`${cacheHit}%`, hitColor], SEP,
-          ['📥 Uncached '], [fmtTok(s.input), 'yellow'], SEP,
-          ['📝 Cache write '], [fmtTok(s.cacheWrite), 'magenta'], SEP,
-          ['📦 Cached '], [fmtTok(s.cacheRead), 'green'], SEP,
-          ['📤 Output '], [fmtTok(s.output), 'cyan'],
+          ['令牌总计 '], [fmtTok(tokens), 'white'], SEP,
+          ['缓存命中 '], [`${cacheHit}%`, hitColor], SEP,
+          ['未缓存输入 '], [fmtTok(s.input), 'yellow'], SEP,
+          ['缓存写入 '], [fmtTok(s.cacheWrite), 'magenta'], SEP,
+          ['缓存读取 '], [fmtTok(s.cacheRead), 'green'], SEP,
+          ['输出 '], [fmtTok(s.output), 'cyan'],
         ],
       },
       ...(c
@@ -192,7 +191,7 @@ export const register: Register = on => {
               accent: ctxColor,
               label: labels.ctx,
               detail: [
-                [`${ctxIcon} `], [fmtTok(c.tokens), ctxColor], [` / ${fmtTok(c.window)}`],
+                ['已用 '], [fmtTok(c.tokens), ctxColor], [` / ${fmtTok(c.window)}`],
                 ...c.rows.flatMap((r, i): Seg[] => [SEP, [`${r.name} `], [fmtTok(r.tokens), ['blue', 'magenta', 'cyan', 'yellow'][i]]]),
               ] as Seg[],
             },
@@ -232,7 +231,7 @@ export const register: Register = on => {
     const pin = (
       <Button
         key="pin"
-        label={pinned ? 'less' : 'details'}
+        label={pinned ? '收起' : '详情'}
         onPress={() => update($, isPinned, v => !v)}
       />
     )

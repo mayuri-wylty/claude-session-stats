@@ -1,48 +1,64 @@
-# session-stats
+# session-stats（中文版）
 
-A Claude Code mod that shows a colored stats bar above the prompt:
-
-```
-💬 11 turns  🔁 308 steps  ⚡ 215 tok/s   🧮 40.4M tok  💾 Cache hit 97%   🟢 24% context   [details]
-```
-
-- **💬 🔁 ⚡ time**: your turns, model requests (steps, subagents included) and output tokens per second.
-- **🧮 💾 tokens**: every token the session spent and the prompt-cache hit rate (green 80%+, yellow 50%+, red below).
-- **🟢 context**: how full the context window is (🟢 under 50%, 🟡 under 80%, 🔴 above).
-
-Hover a stat to see its details on the line below, or press **details** to pin all three:
-
-- time: LLM time, tool time, average time to first token, tok/s
-- tokens: uncached input, cache writes, cached input, output
-- context: tokens used / window, and the largest categories (system prompt, tools, messages, ...)
-
-On a narrow panel the bar shortens its labels, then moves whole stats to the next line, so nothing is cut off.
-
-`/statsbar show` or `/statsbar hide` sets the bar; `/statsbar` alone toggles it.
-
-## Install
-
-At the prompt of a terminal session:
+一个 Claude Code mod：在输入框上方显示一条彩色的会话统计栏。本仓库是 [Yad-Tazheh/claude-session-stats](https://github.com/Yad-Tazheh/claude-session-stats) 的 fork，界面文字改为中文，并去掉了所有 emoji 图标。
 
 ```
-/plugin install session-stats --marketplace Yad-Tazheh/claude-session-stats
+轮次 11  步骤 308  速度 215 tok/s   令牌 40.4M  缓存命中 97%   上下文 24%   [详情]
 ```
 
-Answer `y` to add the marketplace, then pick a scope (user is first; Enter takes it).
+## 统计栏说明
 
-From a shell:
+| 分组 | 显示内容 |
+| --- | --- |
+| 时间 | **轮次**：你发起的对话轮数；**步骤**：模型请求次数（含子代理）；**速度**：每秒输出的 token 数 |
+| 令牌 | **令牌**：本次会话消耗的全部 token；**缓存命中**：提示词缓存命中率 |
+| 上下文 | 上下文窗口已使用的百分比 |
+
+颜色含义（图标已移除，仅用数字颜色区分）：
+
+- **缓存命中**：80% 以上为绿色，50% 以上为黄色，低于 50% 为红色。
+- **上下文**：低于 50% 为绿色，低于 80% 为黄色，80% 以上为红色。
+
+## 悬停详情
+
+把鼠标移到某一组统计上，下一行会显示该组的详细数据；点击 **详情** 可固定显示全部三组，再点 **收起** 取消固定。
+
+- **时间**：轮次、步骤、模型耗时、工具耗时、首字延迟、速度
+- **令牌**：令牌总计、缓存命中、未缓存输入、缓存写入、缓存读取、输出
+- **上下文**：已用 token / 窗口大小，以及占用最大的几类（系统提示词、工具、消息等）
+
+面板较窄时，统计栏会先缩短标签，再把整组统计换到下一行，不会被截断。
+
+## 命令
+
+- `/statsbar show`：显示统计栏
+- `/statsbar hide`：隐藏统计栏
+- `/statsbar`：切换显示 / 隐藏
+
+## 安装
+
+在终端会话的输入框中：
+
+```
+/plugin install session-stats --marketplace mayuri-wylty/claude-session-stats
+```
+
+提示添加 marketplace 时回答 `y`，然后选择安装范围（第一项是 user，直接回车即可）。
+
+在 shell 中：
 
 ```bash
-claude plugin install session-stats --marketplace Yad-Tazheh/claude-session-stats
+claude plugin install session-stats --marketplace mayuri-wylty/claude-session-stats
 ```
 
-In the desktop app, where `/plugin` does not run: click **+** next to the prompt box, then **Plugins**, **Add marketplace** with `Yad-Tazheh/claude-session-stats`, then **Add plugin**.
+在桌面应用中（`/plugin` 不可用）：点击输入框旁的 **+**，选择 **Plugins**，再点 **Add marketplace** 并填入 `mayuri-wylty/claude-session-stats`，最后点 **Add plugin**。
 
-## Notes
+## 说明
 
-- Counts start when the mod loads; tool time leaves out the Agent tool, whose time is the subagent's own LLM and tool time.
-- Function hooks are an early-access Claude Code surface and may change between releases.
+- 统计从 mod 加载时开始计数；工具耗时不包含 Agent 工具，因为它的耗时就是子代理自己的模型耗时与工具耗时。
+- 函数 hook 是 Claude Code 的早期功能，后续版本可能会有变化。
+- 与上游的差异：仅修改了界面文字（中文化、去除图标），统计逻辑未变。
 
-## License
+## 许可证
 
-MIT
+MIT，沿用上游。
